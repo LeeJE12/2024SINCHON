@@ -63,4 +63,19 @@ class MoneyListView(views.APIView):
         
         serializer = MoneyListSerializer(moneylists, many=True)
         return Response({'message': 'MoneyList get 성공', 'data': serializer.data}, status=status.HTTP_200_OK)
-       
+
+class DashboardView(views.APIView):
+    def post(self, request, eventid, *args, **kwargs):
+        # 특정 eventid에 해당하는 MoneyList 중 상위 3개 항목을 가져옴
+        moneylists = MoneyList.objects.filter(eventid=eventid).order_by('-id')[:3]
+        
+        serializer = MoneyListSerializer(moneylists, many=True)
+        
+        # 대시보드에 대한 처리 로직 (여기서는 단순히 데이터 반환으로 예시)
+        dashboard_data = {
+            'top_moneylists': serializer.data,
+            'summary': 'This is a summary of the latest transactions.'
+            # 추가적인 대시보드 데이터를 여기서 생성
+        }
+
+        return Response({'message': 'Dashboard data created', 'data': dashboard_data}, status=status.HTTP_201_CREATED)
