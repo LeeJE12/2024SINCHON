@@ -6,7 +6,7 @@ class Club(models.Model):
     clubname = models.CharField(max_length=100, unique=True,null=False)
     clubpw = models.CharField(max_length=128,null=False)  # 비밀번호는 해시로 저장
     # members 필드 삭제 (일대다 관계로 수정)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='clubs')  # Club을 관리하는 사용자
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='clubs', default=1)  # Club을 관리하는 사용자
     
     def __str__(self):
         return self.clubname
