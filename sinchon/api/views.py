@@ -2,6 +2,7 @@ from django.shortcuts import render
 from .serializers import UserSerializer, UserLoginSerializer
 from rest_framework import views, status
 from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 # Create your views here.
@@ -16,6 +17,7 @@ class SignupView(views.APIView):
         return Response({'message': '회원가입 실패', 'error': serializer.errors})
 
 class LoginView(views.APIView):
+    permission_classes = [AllowAny]  # 모든 사용자 접근 가능하도록 설정
     serializer_class= UserLoginSerializer
     def post(self, request):
         serializer = UserLoginSerializer(data = request.data)
