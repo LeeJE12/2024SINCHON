@@ -158,6 +158,7 @@ class MoneyListView(views.APIView):
 
         return Response({
             'message': 'MoneyList get 성공',
+            'total' : event.budget,
             'clubevents': list(clubevent),
             'data': serializer.data
         }, status=status.HTTP_200_OK)
@@ -178,7 +179,6 @@ class DashboardView(views.APIView):
         forSnack = moneylists.filter(category="간식비").count()
         forPromotion = moneylists.filter(category="홍보비").count()
         forSubsidy = moneylists.filter(category="활동지원금").count()
-        forEtc = moneylists.filter(category="기타").count()
 
         total_count = moneylists.count()
 
@@ -205,8 +205,7 @@ class DashboardView(views.APIView):
         category_data = {
             'snack_percentage': (forSnack / total_count * 100) if total_count else 0,
             'promotion_percentage': (forPromotion / total_count * 100) if total_count else 0,
-            'subsidy_percentage': (forSubsidy / total_count * 100) if total_count else 0,
-            'etc_percentage': (forEtc / total_count * 100) if total_count else 0,
+            'subsidy_percentage': (forSubsidy / total_count * 100) if total_count else 0
         }
 
         return Response({
