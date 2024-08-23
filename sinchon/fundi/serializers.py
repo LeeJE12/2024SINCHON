@@ -1,6 +1,15 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import *
+from api.serializers import UserSerializer
+
+class ClubSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Club
+        fields = ['classname', 'classpw']
+        read_only_fiels = ['user']
 
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
@@ -11,4 +20,4 @@ class EventSerializer(serializers.ModelSerializer):
 class MoneyListSerializer(serializers.ModelSerializer):
     class Meta:
         model = MoneyList
-        fields = ['list', 'money', 'eventid', 'category', 'expense', 'receipt']
+        fields = ['list', 'money', 'category', 'expense', 'receipt', 'eventid', 'date']
