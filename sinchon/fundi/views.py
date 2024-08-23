@@ -67,13 +67,22 @@ class MoneyListCreateView(views.APIView):
 
 class MoneyListView(views.APIView):
     def get(self, request, eventid, *args, **kwargs):
+        event = get_object_or_404(Event, id=eventid)
+        club = event.club
+        clubevent = Event.objects.filter(club=club).values('id', 'eventName')
+
         moneylists = MoneyList.objects.filter(eventid=eventid)
         expense = request.query_params.get('expense')
         if expense is not None:
             moneylists = moneylists.filter(expense=expense)
         
         serializer = MoneyListSerializer(moneylists, many=True)
-        return Response({'message': 'MoneyList get 성공', 'data': serializer.data}, status=status.HTTP_200_OK)
+
+        return Response({
+            'message': 'MoneyList get 성공',
+            'clubevents': list(clubevent),
+            'data': serializer.data
+        }, status=status.HTTP_200_OK)
 
 class DashboardView(views.APIView):
     def post(self, request, eventid, *args, **kwargs):
