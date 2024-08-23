@@ -38,7 +38,7 @@ class EventCreateView(views.APIView):
 
 class MoneyListCreateView(views.APIView):
     def post(self, request, eventid):
-
+        
         data = request.data.copy()
         data['eventid'] = eventid
 
