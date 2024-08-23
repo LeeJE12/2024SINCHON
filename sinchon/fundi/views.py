@@ -22,14 +22,24 @@ class ClubCreateView(views.APIView):
         return Response({'messange': '동아리 생성 실패', 'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
+'''
 class EventCreateView(views.APIView):
     permission_classes = [IsAuthenticated]  # 로그인된 사용자만 접근 가능
 
     def post(self, request):
         user = request.user  # 현재 로그인된 사용자
-
-        club = get_object_or_404(Club, user=user)
-        if club.DoesNotExist:
+        try:
+            # 사용자의 동아리 찾기 (로그인한 클럽에 연결)
+            #club = Club.objects.get(user=user)  # Club 모델이 User와 연결된 경우
+            
+            
+            # 사용자의 첫 번째 클럽 선택
+            club = Club.objects.filter(user=user).first()
+            if not club:
+                return Response({'message': '동아리가 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            
+        except Club.DoesNotExist:
             return Response({'message': '동아리가 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
 
         data = request.data.copy()
@@ -40,6 +50,30 @@ class EventCreateView(views.APIView):
             serializer.save()
             return Response({'message': '행사 추가 성공', 'data': serializer.data}, status=status.HTTP_201_CREATED)
         return Response({'message': '행사 추가 실패', 'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+'''
+
+
+class EventCreateView(views.APIView):
+    permission_classes = [IsAuthenticated]  # 로그인된 사용자만 접근 가능
+
+    def post(self, request):
+        user = request.user  # 현재 로그인된 사용자
+        try:
+            # 사용자의 동아리 찾기 (로그인한 클럽에 연결)
+            club = Club.objects.filter(user=user).first()
+            if not club:
+                return Response({'message': '동아리가 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        except Club.DoesNotExist:
+            return Response({'message': '동아리가 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        data = request.data.copy()
+        serializer = EventSerializer(data=data)
+
+        if serializer.is_valid():
+            serializer.save(club=club)  # club 인스턴스를 명시적으로 전달
+            return Response({'message': '행사 추가 성공', 'data': serializer.data}, status=status.HTTP_201_CREATED)
+        return Response({'message': '행사 추가 실패', 'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class RegisterMemberView(views.APIView):
@@ -47,18 +81,19 @@ class RegisterMemberView(views.APIView):
 
     def post(self, request, eventid):  # URL에서 eventid를 받아옴
         event = get_object_or_404(Event, id=eventid)  # 이벤트 조회
+        club = event.club  # 이벤트가 속한 클럽 가져오기
 
         serializer = RegisterMemberSerializer(data=request.data)
         if serializer.is_valid():
-            member_ids = serializer.validated_data['member_ids']
-            members = Member.objects.filter(id__in=member_ids)
+            # 새로운 멤버 생성 (이벤트의 클럽 정보 사용)
+            member_name = serializer.validated_data.get('member_name')
+            member = Member.objects.create(membername=member_name, club=club)
 
-            # 멤버들을 이벤트 참가자 목록에 추가
-            for member in members:
-                event.participants.add(member)
-
+            # 멤버를 이벤트 참가자 목록에 추가
+            event.participants.add(member)
             event.save()
-            return Response({'message': '해당 행사 참여 부원등록 성공'}, status=status.HTTP_201_CREATED)
+
+            return Response({'message': '해당 행사 참여 부원 등록 성공', 'member': member.membername}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

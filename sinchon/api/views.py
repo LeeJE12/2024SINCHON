@@ -10,9 +10,8 @@ from rest_framework.permissions import AllowAny  # AllowAny 권한 추가
 
 
 class SignupView(views.APIView):
-    permission_classes = [AllowAny]  # 모든 사용자 접근 가능하도록 설정
-
-    def post(self, request):
+    permission_classes = [AllowAny]
+    def post(self, request):       
         data = request.data.copy()
 
         serializer = UserSerializer(data=data)
