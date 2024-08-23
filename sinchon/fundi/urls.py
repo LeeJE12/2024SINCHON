@@ -8,5 +8,5 @@ app_name = 'fundi'
 
 urlpatterns = [
     path('registerEvent/', EventCreateView.as_view(), name='registerEvent'),
-    path('registerMember/', RegisterMemberView.as_view(), name='register-member'),
+    path('registerMember/<int:eventid>/', RegisterMemberView.as_view(), name='register-member'),
 ]

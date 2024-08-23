@@ -27,3 +27,5 @@ class RegisterMemberSerializer(serializers.Serializer):
 
         event.save()
         return event
+
+
