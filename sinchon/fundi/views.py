@@ -46,11 +46,20 @@ class EventCreateView(views.APIView):
 class RegisterMemberView(views.APIView):
     permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 가능
 
-    def post(self, request):
+    def post(self, request, eventid):  # URL에서 eventid를 받아옴
+        event = get_object_or_404(Event, id=eventid)  # 이벤트 조회
+
         serializer = RegisterMemberSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response({'message': 'Member successfully registered to the event.'}, status=status.HTTP_201_CREATED)
+            member_ids = serializer.validated_data['member_ids']
+            members = Member.objects.filter(id__in=member_ids)
+
+            # 멤버들을 이벤트 참가자 목록에 추가
+            for member in members:
+                event.participants.add(member)
+
+            event.save()
+            return Response({'message': '해당 행사 참여 부원등록 성공'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class MoneyListCreateView(views.APIView):

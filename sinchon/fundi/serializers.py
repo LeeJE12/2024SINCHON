@@ -17,7 +17,7 @@ class EventSerializer(serializers.ModelSerializer):
         fields = ['eventName', 'startDate', 'endDate', 'budget', 'participants', 'club']
         read_only_fields = ['club']  # club 필드는 자동으로 설정되므로 읽기 전용으로 설정
 
-
+'''
 class RegisterMemberSerializer(serializers.Serializer):
     event_id = serializers.PrimaryKeyRelatedField(queryset=Event.objects.all())
     member_ids = serializers.ListField(
@@ -36,7 +36,17 @@ class RegisterMemberSerializer(serializers.Serializer):
 
         event.save()
         return event
+'''
+class RegisterMemberSerializer(serializers.Serializer):
+    member_ids = serializers.ListField(
+        child=serializers.PrimaryKeyRelatedField(queryset=Member.objects.all()),
+        allow_empty=False
+    )
 
+    def validate_member_ids(self, value):
+        if not value:
+            raise serializers.ValidationError("멤버 리스트가 비었습니다.")
+        return value
 
 class MoneyListSerializer(serializers.ModelSerializer):
     listid = serializers.IntegerField(source='id', read_only=True)
