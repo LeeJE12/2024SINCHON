@@ -7,3 +7,8 @@ class EventSerializer(serializers.ModelSerializer):
         model = Event
         fields = ['eventName', 'startDate', 'endDate', 'budget', 'participants', 'club']
         read_only_fields = ['club']  # club 필드는 자동으로 설정되므로 읽기 전용으로 설정
+
+class MoneyListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MoneyList
+        fields = ['list', 'money', 'eventid', 'category', 'expense', 'receipt']

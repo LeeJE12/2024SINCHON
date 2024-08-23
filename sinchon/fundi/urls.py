@@ -7,5 +7,7 @@ from .views import *
 app_name = 'fundi'
 
 urlpatterns = [
-    path('registerEvent/', EventCreateView.as_view(), name='registerEvent'),
+    path('event/register/', EventCreateView.as_view(), name='event-register'),
+    path('event/<int:event_id>/moneylist/',
+         MoneyListView.as_view(), name='moneylist'),
 ]
