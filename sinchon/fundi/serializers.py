@@ -50,7 +50,8 @@ class RegisterMemberSerializer(serializers.Serializer):
 
 class MoneyListSerializer(serializers.ModelSerializer):
     listid = serializers.IntegerField(source='id', read_only=True)
+    total = serializers.IntegerField(source='budget', read_only=True)
 
     class Meta:
         model = MoneyList
-        fields = ['listid', 'list', 'money', 'category', 'expense', 'receipt', 'eventid', 'date']
+        fields = ['listid', 'list', 'money', 'category', 'expense', 'receipt', 'eventid', 'date', 'total']
