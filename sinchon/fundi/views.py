@@ -23,3 +23,14 @@ class EventCreateView(views.APIView):
             serializer.save()
             return Response({'message': '행사 추가 성공', 'data': serializer.data}, status=status.HTTP_201_CREATED)
         return Response({'message': '행사 추가 실패', 'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RegisterMemberView(views.APIView):
+    permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 가능
+
+    def post(self, request):
+        serializer = RegisterMemberSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Member successfully registered to the event.'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
