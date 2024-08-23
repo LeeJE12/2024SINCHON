@@ -16,7 +16,7 @@ class Member(models.Model):
     club = models.ForeignKey(
         Club, on_delete=models.CASCADE, related_name='members')  # Club과 일대다 관계
     membername = models.CharField(max_length=100)
-    memberdues = models.IntegerField()  # 회비를 정수로 표현
+    memberdues = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.membername} ({self.club.clubname})"
@@ -44,7 +44,6 @@ class Event(models.Model):
 
 # 자식 모델들
 
-
 class MembershipFeeEvent(Event):  # 회비 사용 행사
     money = models.IntegerField()  # 인당회비
 
@@ -65,6 +64,7 @@ class MoneyList(models.Model):
     category = models.CharField(max_length=200, blank=True, null=True)
     expense = models.BooleanField(default=True)
     receipt = models.ImageField(blank=True, null=True)
+    date = models.DateField('date published', blank=True, null=True, auto_now_add=True)
 
     def __str__(self):
-        return self.id
+        return f"{self.eventid.eventName} ({self.list})"
