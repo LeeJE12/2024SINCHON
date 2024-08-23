@@ -1,6 +1,8 @@
 # 2024SINCHONTHON
 2024 신촌톤 : SINCHONTHON Team5 - FunDI
 
+<br><br>
+
 ## 프로젝트 소개 :  👥FunDI👥
 
 ### 1. 서비스 소개
