@@ -4,6 +4,17 @@ from rest_framework.permissions import IsAuthenticated
 from .models import *
 from .serializers import *
 
+class ClubCreateView(views.APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = ClubSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response({'message':'동아리 생성 성공', 'data':serializer.data}, status=status.HTTP_201_CREATED)
+        return Response({'messange':'동아리 생성 실패', 'error':serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
 class EventCreateView(views.APIView):
     permission_classes = [IsAuthenticated]  # 로그인된 사용자만 접근 가능
 
@@ -23,3 +34,16 @@ class EventCreateView(views.APIView):
             serializer.save()
             return Response({'message': '행사 추가 성공', 'data': serializer.data}, status=status.HTTP_201_CREATED)
         return Response({'message': '행사 추가 실패', 'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+class MoneyListCreateView(views.APIView):
+    def post(self, request, eventid):
+
+        data = request.data.copy()
+        data['eventid'] = eventid
+
+        serializer = MoneyListSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': '행사 추가 성공', 'data': serializer.data}, status=status.HTTP_201_CREATED)
+        return Response({'message': '행사 추가 실패', 'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
