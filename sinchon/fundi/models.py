@@ -41,7 +41,7 @@ class NoFeeEvent(Event):  # 회비 미사용 행사
 class MoneyList(models.Model):
     list = models.CharField(max_length=200, blank=True, null=True)
     money = models.IntegerField(blank=True, null=True)
-    eventid = models.ForeignField(Event, on_delete=models.CASCADE, related_name='eventlist')
+    eventid = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='eventlist')
 
     def __str__(self):
         return self.id
