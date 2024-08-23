@@ -3,19 +3,23 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import *
 from api.serializers import UserSerializer
 
+
 class ClubSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
 
     class Meta:
         model = Club
-        fields = ['classname', 'classpw']
+        fields = ['clubname', 'clubpw', 'user']
         read_only_fiels = ['user']
+
 
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
-        fields = ['eventName', 'startDate', 'endDate', 'budget', 'participants', 'club']
+        fields = ['eventName', 'startDate', 'endDate',
+                  'budget', 'participants', 'club']
         read_only_fields = ['club']  # club 필드는 자동으로 설정되므로 읽기 전용으로 설정
+
 
 '''
 class RegisterMemberSerializer(serializers.Serializer):
@@ -37,9 +41,12 @@ class RegisterMemberSerializer(serializers.Serializer):
         event.save()
         return event
 '''
+
+
 class RegisterMemberSerializer(serializers.Serializer):
     member_ids = serializers.ListField(
-        child=serializers.PrimaryKeyRelatedField(queryset=Member.objects.all()),
+        child=serializers.PrimaryKeyRelatedField(
+            queryset=Member.objects.all()),
         allow_empty=False
     )
 
@@ -48,10 +55,12 @@ class RegisterMemberSerializer(serializers.Serializer):
             raise serializers.ValidationError("멤버 리스트가 비었습니다.")
         return value
 
+
 class MoneyListSerializer(serializers.ModelSerializer):
     listid = serializers.IntegerField(source='id', read_only=True)
     total = serializers.IntegerField(source='budget', read_only=True)
 
     class Meta:
         model = MoneyList
-        fields = ['listid', 'list', 'money', 'category', 'expense', 'receipt', 'eventid', 'date', 'total']
+        fields = ['listid', 'list', 'money', 'category',
+                  'expense', 'receipt', 'eventid', 'date', 'total']
