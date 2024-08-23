@@ -21,6 +21,7 @@ class ClubCreateView(views.APIView):
             return Response({'message': '동아리 생성 성공', 'data': serializer.data}, status=status.HTTP_201_CREATED)
         return Response({'messange': '동아리 생성 실패', 'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
+
 '''
 class EventCreateView(views.APIView):
     permission_classes = [IsAuthenticated]  # 로그인된 사용자만 접근 가능
@@ -51,6 +52,7 @@ class EventCreateView(views.APIView):
         return Response({'message': '행사 추가 실패', 'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 '''
 
+
 class EventCreateView(views.APIView):
     permission_classes = [IsAuthenticated]  # 로그인된 사용자만 접근 가능
 
@@ -61,7 +63,7 @@ class EventCreateView(views.APIView):
             club = Club.objects.filter(user=user).first()
             if not club:
                 return Response({'message': '동아리가 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
-            
+
         except Club.DoesNotExist:
             return Response({'message': '동아리가 존재하지 않습니다.'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -72,6 +74,7 @@ class EventCreateView(views.APIView):
             serializer.save(club=club)  # club 인스턴스를 명시적으로 전달
             return Response({'message': '행사 추가 성공', 'data': serializer.data}, status=status.HTTP_201_CREATED)
         return Response({'message': '행사 추가 실패', 'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class RegisterMemberView(views.APIView):
     permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 가능
@@ -92,8 +95,7 @@ class RegisterMemberView(views.APIView):
 
             return Response({'message': '해당 행사 참여 부원 등록 성공', 'member': member.membername}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    
+
 
 class MoneyListCreateExpenseView(views.APIView):
     def post(self, request, eventid):
@@ -111,9 +113,10 @@ class MoneyListCreateExpenseView(views.APIView):
 
             moneylist.budget = event.budget
             moneylist.save()
-            
+
             return Response({'message': '지출기록 추가 성공', 'data': serializer.data}, status=status.HTTP_201_CREATED)
         return Response({'message': '지출기록 추가 실패', 'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class MoneyListCreateEarnView(views.APIView):
     def post(self, request, eventid):
@@ -146,11 +149,11 @@ class MoneyListView(views.APIView):
         expense = request.query_params.get('expense')
         if expense is not None:
             moneylists = moneylists.filter(expense=expense).order_by('-id')
-        
-        serializer = MoneyListSerializer(moneylists, many=True)
-        #serialized_data = serializer.data.copy()
 
-        #for item in serialized_data:
+        serializer = MoneyListSerializer(moneylists, many=True)
+        # serialized_data = serializer.data.copy()
+
+        # for item in serialized_data:
         #    item.update({'total': event.budget})
 
         return Response({
@@ -159,18 +162,58 @@ class MoneyListView(views.APIView):
             'data': serializer.data
         }, status=status.HTTP_200_OK)
 
+
 class DashboardView(views.APIView):
-    def post(self, request, eventid, *args, **kwargs):
-        # 특정 eventid에 해당하는 MoneyList 중 상위 3개 항목을 가져옴
-        moneylists = MoneyList.objects.filter(eventid=eventid).order_by('-id')[:3]
-        
-        serializer = MoneyListSerializer(moneylists, many=True)
-        
-        # 대시보드에 대한 처리 로직 (여기서는 단순히 데이터 반환으로 예시)
-        dashboard_data = {
-            'top_moneylists': serializer.data,
-            'summary': 'This is a summary of the latest transactions.'
-            # 추가적인 대시보드 데이터를 여기서 생성
+    def get(self, request, eventid, *args, **kwargs):
+        event = get_object_or_404(Event, id=eventid)
+        club = event.club
+        clubevent = Event.objects.filter(club=club).values('id', 'eventName')
+
+        moneylists = MoneyList.objects.filter(eventid=eventid)
+
+        topThree = moneylists.order_by('-id')[:3]
+        expenseLists = moneylists.filter(expense=True)
+        earnLists = moneylists.filter(expense=False)
+
+        forSnack = moneylists.filter(category="간식비").count()
+        forPromotion = moneylists.filter(category="홍보비").count()
+        forSubsidy = moneylists.filter(category="활동지원금").count()
+        forEtc = moneylists.filter(category="기타").count()
+
+        total_count = moneylists.count()
+
+        totalExpense = 0
+        for item in expenseLists:
+            totalExpense += item.money
+
+        totalEarn = 0
+        for item in earnLists:
+            totalEarn += item.money
+
+        money_data = {
+            'total' : event.budget,
+            'totalexpense' : totalExpense,
+            'totalearn' : totalEarn,
         }
 
-        return Response({'message': 'Dashboard data created', 'data': dashboard_data}, status=status.HTTP_201_CREATED)
+        serializer = MoneyListSerializer(topThree, many=True)
+        dashboard_data = {
+            'summary': '최근 거래 내역 (3개)',
+            'top_moneylists': serializer.data
+        }
+
+        category_data = {
+            'snack_percentage': (forSnack / total_count * 100) if total_count else 0,
+            'promotion_percentage': (forPromotion / total_count * 100) if total_count else 0,
+            'subsidy_percentage': (forSubsidy / total_count * 100) if total_count else 0,
+            'etc_percentage': (forEtc / total_count * 100) if total_count else 0,
+        }
+
+        return Response({
+            'message': 'Dashboard data created',
+            'clubevents': list(clubevent), 
+            'eventname' : event.eventName,
+            'moneydata' : money_data,
+            'categorydata' : category_data,
+            'data': dashboard_data
+            }, status=status.HTTP_201_CREATED)
