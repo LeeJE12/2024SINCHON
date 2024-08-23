@@ -8,45 +8,34 @@ class ClubSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Club
-        fields = ['classname', 'classpw']
+        fields = ['clubname', 'clubpw','user']
         read_only_fiels = ['user']
 
 class EventSerializer(serializers.ModelSerializer):
+    participants = serializers.PrimaryKeyRelatedField(
+        queryset=Member.objects.all(),
+        many=True,
+        required=False  # 필수가 아님을 명시
+    )
+    
     class Meta:
         model = Event
         fields = ['eventName', 'startDate', 'endDate', 'budget', 'participants', 'club']
         read_only_fields = ['club']  # club 필드는 자동으로 설정되므로 읽기 전용으로 설정
 
-'''
 class RegisterMemberSerializer(serializers.Serializer):
-    event_id = serializers.PrimaryKeyRelatedField(queryset=Event.objects.all())
-    member_ids = serializers.ListField(
-        child=serializers.PrimaryKeyRelatedField(queryset=Member.objects.all()),
-        allow_empty=False
-    )
+    member_name = serializers.CharField(max_length=100)  # 부원의 이름을 받아오기 위한 필드
 
-    def create(self, validated_data):
-        event = validated_data['event_id']
-        member_ids = validated_data['member_ids']
-        members = Member.objects.filter(id__in=member_ids)  # 주어진 ID의 멤버들 가져오기
-
-        # 멤버들을 이벤트 참가자 목록에 추가
-        for member in members:
-            event.participants.add(member)
-
-        event.save()
-        return event
-'''
-class RegisterMemberSerializer(serializers.Serializer):
-    member_ids = serializers.ListField(
-        child=serializers.PrimaryKeyRelatedField(queryset=Member.objects.all()),
-        allow_empty=False
-    )
-
-    def validate_member_ids(self, value):
+    def validate_member_name(self, value):
         if not value:
-            raise serializers.ValidationError("멤버 리스트가 비었습니다.")
+            raise serializers.ValidationError("멤버이름이 필요합니다.")
         return value
+    '''
+    def get_or_create_member(self, club):
+        member_name = self.validated_data.get('member_name')
+        member, created = Member.objects.get_or_create(membername=member_name, club=club)
+        return member
+    '''
 
 class MoneyListSerializer(serializers.ModelSerializer):
     listid = serializers.IntegerField(source='id', read_only=True)
