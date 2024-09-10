@@ -1,6 +1,10 @@
 # 2024SINCHONTHON
 2024 신촌톤 : SINCHONTHON Team5 - FunDI
 
+<br>
+<br>
+
+
 **[신촌톤 대상 수상]**
 
 <img width="30%" src="https://github.com/user-attachments/assets/0696d908-307a-4d97-af04-14998ce6de91"/>
